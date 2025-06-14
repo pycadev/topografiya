@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Qiyalik Burchagini Aniqlash (Trigonometrik Jadvalsiz){% endblock %}
+
+{% block content %}
+<div class="topo-container">
+  <a href="{% url 'home' %}" class="topo-back">← Asosiy sahifaga qaytish</a>
+
+  <h2 class="topo-title">Qiyalik Burchagini Aniqlash (Trigonometrik Jadvalsiz)</h2>
+
+  <div class="topo-form">
+    <label for="height">Qiyalik balandligi (h, metrda):</label>
+    <input type="number" id="height" placeholder="Masalan: 66">
+
+    <label for="distance">Qiyalik kesimlari masofasi (a, metrda):</label>
+    <input type="number" id="distance" placeholder="Masalan: 280">
+
+    <button onclick="hisobla()">Hisobla</button>
+
+    <div id="result" class="topo-result"></div>
+  </div>
+</div>
+
+<script>
+  function hisobla() {
+    const height = parseFloat(document.getElementById('height').value);
+    const distance = parseFloat(document.getElementById('distance').value);
+    const resultDiv = document.getElementById('result');
+
+    if (isNaN(height) || isNaN(distance)) {
+      resultDiv.innerHTML = "❌ Iltimos, barcha maydonlarga raqam kiriting!";
+      return;
+    }
+
+    if (distance <= 0) {
+      resultDiv.innerHTML = "❌ Masofa (a) 0 dan katta bo‘lishi kerak!";
+      return;
+    }
+
+    const alpha = (60 * height) / distance;
+    const degrees = Math.floor(alpha);
+    const minutes = Math.round((alpha - degrees) * 60);
+
+    resultDiv.innerHTML = `
+      🔣 Natija: Qiyalik burchagi <strong>${degrees}° ${minutes}'</strong><br>
+      <small>(h = ${height} m, a = ${distance} m)</small>
+    `;
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}Panajoy burchagini hisoblash{% endblock %}
+
+{% block content %}
+<div class="topo-container">
+  <h2 class="topo-title">Panajoy burchagini hisoblash</h2>
+
+  <div class="topo-form">
+    <label for="hp">hₚ (panajoy balandligi, m):</label>
+    <input type="number" id="hp" step="0.1" placeholder="masalan, 32" />
+
+    <label for="d">d (panajoygacha masofa, m):</label>
+    <input type="number" id="d" step="0.1" placeholder="masalan, 1250" />
+
+    <button onclick="hisobla()">Hisobla</button>
+
+    <div id="result" class="topo-result"></div>
+  </div>
+</div>
+
+<script>
+  function hisobla() {
+    const hp = parseFloat(document.getElementById("hp").value);
+    const d = parseFloat(document.getElementById("d").value);
+
+    if (isNaN(hp) || isNaN(d) || d === 0) {
+      document.getElementById("result").innerHTML =
+        "❌ Iltimos, barcha qiymatlarni to‘g‘ri kiriting.";
+      return;
+    }
+
+    const beta = (hp / d) * 1000;
+    const gradus = Math.ceil(beta);
+
+    document.getElementById("result").innerHTML =
+      `📐 <strong>Panajoy burchagi (β):</strong> 0 - ${gradus} (${beta.toFixed(1)})`;
+  }
+</script>
+{% endblock %}

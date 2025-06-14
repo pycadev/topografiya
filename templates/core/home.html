@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}🏠 Bosh sahifa - Topografik Masalalar{% endblock %}
+
+{% block content %}
+<div class="text-center mb-5">
+    <h2 class="mb-3"><i class="bi bi-list-check text-primary"></i> Topografik Masalalar</h2>
+    <p class="text-muted">Quyidagi masalalardan birini tanlang va ishlashni boshlang.</p>
+</div>
+
+<div class="row g-4">
+    {% for page in pages %}
+    <div class="col-12 col-md-6 col-xl-4">
+        <div class="card problem-card h-100 border-0">
+            <div class="card-body d-flex flex-column justify-content-between">
+                <div class="mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="icon-circle me-2">
+                            <i class="bi bi-lightbulb-fill text-white"></i>
+                        </div>
+                        <h5 class="card-title m-0 text-dark">{{ page.num }}. {{ page.title }}</h5>
+                    </div>
+                    <p class="card-text text-secondary small">{{ page.desc }}</p>
+                </div>
+                <div class="text-end">
+                    <a href="{% url 'index' page.num %}" class="btn btn-gradient">
+                        <i class="bi bi-play-fill me-1"></i> Boshlash
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<style>
+/* --- Card Dizayni --- */
+.problem-card {
+    background: linear-gradient(145deg, #0a72e9, #5184dd);
+    border-radius: 16px;
+    padding: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.problem-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+}
+
+/* --- Icon Circle --- */
+.icon-circle {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #6f42c1, #6610f2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* --- Tugma --- */
+.btn-gradient {
+    background: linear-gradient(90deg, #00c6ff, #0072ff);
+    border: none;
+    color: white;
+    padding: 6px 18px;
+    font-weight: 500;
+    font-size: 14px;
+    border-radius: 30px;
+    transition: all 0.25s ease-in-out;
+    text-decoration: none;
+}
+.btn-gradient:hover {
+    background: linear-gradient(90deg, #0072ff, #00c6ff);
+    transform: scale(1.05);
+    color: #fff;
+}
+</style>
+{% endblock %}

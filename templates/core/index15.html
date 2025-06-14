@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Uglomer bo‘lakdan Gradusga o‘tish{% endblock %}
+
+{% block content %}
+<div class="topo-container">
+  <h2 class="topo-title">Uglomer bo‘lak → Gradus</h2>
+
+  <div class="topo-form">
+    <label for="uglomer">Uglomer bo‘lakni kiriting (masalan: 17-29):</label>
+    <input type="text" id="uglomer" placeholder="masalan, 17-29" />
+
+    <button onclick="hisobla()">Hisobla</button>
+
+    <div id="result" class="topo-result"></div>
+  </div>
+</div>
+
+<script>
+  function hisobla() {
+    const input = document.getElementById("uglomer").value.trim();
+    const resultDiv = document.getElementById("result");
+
+    if (!input || !input.includes("-")) {
+      resultDiv.innerHTML = "❌ Iltimos, to‘g‘ri formatda kiriting: masalan, 17-29";
+      return;
+    }
+
+    const [butun, onlik] = input.split("-").map(Number);
+
+    if (isNaN(butun) || isNaN(onlik)) {
+      resultDiv.innerHTML = "❌ Faqat raqamlar kiriting!";
+      return;
+    }
+
+    // Har bir bo‘lak (uglomerni 1 bo‘lagi) 3.6 daqiqa degani
+    const totalDel = butun * 100 + onlik;
+    const totalMinutes = totalDel * 3.6;
+
+    const degrees = Math.floor(totalMinutes / 60);
+    const minutes = Math.floor(totalMinutes % 60);
+    const seconds = Math.round((totalMinutes - Math.floor(totalMinutes)) * 60);
+
+    resultDiv.innerHTML = `
+      🔣 <strong>Natija:</strong> ${degrees}° ${minutes}' ${seconds}"<br>
+      <small>(Umumiy daqiqa: ${totalMinutes.toFixed(1)}')</small>
+    `;
+  }
+</script>
+{% endblock %}

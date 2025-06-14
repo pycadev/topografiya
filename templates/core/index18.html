@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Qiyalik Burchagini Aniqlash{% endblock %}
+
+{% block content %}
+<div class="topo-container">
+  <a href="{% url 'home' %}" class="topo-back">← Asosiy sahifaga qaytish</a>
+
+  <h2 class="topo-title">Qiyalik Burchagini Aniqlash</h2>
+
+  <div class="topo-form">
+    <label for="scale">Xarita miqyosini tanlang:</label>
+    <select id="scale">
+      <option value="25000">1:25 000 (h = 5 m)</option>
+      <option value="50000">1:50 000 (h = 10 m)</option>
+      <option value="100000">1:100 000 (h = 20 m)</option>
+    </select>
+
+    <label for="height">Relef kesimlari balandligi (h, metrda):</label>
+    <input type="number" id="height" placeholder="Masalan: 12">
+
+    <label for="distance">Gorizontallar orasidagi masofa (a, mm da):</label>
+    <input type="number" id="distance" placeholder="Masalan: 4">
+
+    <button onclick="hisobla()">Hisobla</button>
+
+    <div id="result" class="topo-result"></div>
+  </div>
+</div>
+
+<script>
+  function hisobla() {
+    const scale = parseInt(document.getElementById('scale').value);
+    const height = parseFloat(document.getElementById('height').value);
+    const distance = parseFloat(document.getElementById('distance').value);
+    const resultDiv = document.getElementById('result');
+
+    if (isNaN(height) || isNaN(distance)) {
+      resultDiv.innerHTML = "❌ Iltimos, barcha maydonlarga raqam kiriting!";
+      return;
+    }
+
+    if (distance <= 0) {
+      resultDiv.innerHTML = "❌ Masofa (a) 0 dan katta bo‘lishi kerak!";
+      return;
+    }
+
+    const alpha = 12 / distance;
+
+    resultDiv.innerHTML = `
+      🔣 Natija: Qiyalik burchagi <strong>${alpha.toFixed(2)}°</strong><br>
+      <small>(Xarita miqyosi: 1:${scale}, h = ${height} m, a = ${distance} mm)</small>
+    `;
+  }
+</script>
+{% endblock %}
+

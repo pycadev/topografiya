@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Qiyalik Burchagini Aniqlash (Gorizontal Vizirlash){% endblock %}
+
+{% block content %}
+<div class="topo-container">
+  <a href="{% url 'home' %}" class="topo-back">← Asosiy sahifaga qaytish</a>
+
+  <h2 class="topo-title">Qiyalik Burchagini Aniqlash (Gorizontal Vizirlash)</h2>
+
+  <div class="topo-form">
+    <label for="steps">Juft qadamlar sonini kiriting (n):</label>
+    <input type="number" id="steps" placeholder="Masalan: 8">
+
+    <button onclick="hisobla()">Hisobla</button>
+
+    <div id="result" class="topo-result"></div>
+  </div>
+</div>
+
+<script>
+  function hisobla() {
+    const steps = parseFloat(document.getElementById('steps').value);
+    const resultDiv = document.getElementById('result');
+
+    if (isNaN(steps)) {
+      resultDiv.innerHTML = "❌ Iltimos, juft qadamlar sonini raqam sifatida kiriting!";
+      return;
+    }
+
+    if (steps <= 0) {
+      resultDiv.innerHTML = "❌ Juft qadamlar soni (n) 0 dan katta bo‘lishi kerak!";
+      return;
+    }
+
+    const alpha = 60 / steps;
+    const degrees = Math.floor(alpha);
+    const minutes = Math.round((alpha - degrees) * 60);
+
+    resultDiv.innerHTML = `
+      🔣 Natija: Qiyalik burchagi <strong>${degrees}° ${minutes}'</strong><br>
+      <small>(Juft qadamlar soni: ${steps})</small>
+    `;
+  }
+</script>
+{% endblock %}

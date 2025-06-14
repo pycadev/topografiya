@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Nuqtalarning o‘zaro ko‘rinishini aniqlash{% endblock %}
+
+{% block content %}
+<div class="topo-container">
+  <h2 class="topo-title">Nuqtalarning o‘zaro ko‘rinishini aniqlash</h2>
+
+  <div class="topo-form">
+    <label for="d1">d₁ (kuzatuvchidan nishongacha masofa) [sm]:</label>
+    <input type="number" id="d1" placeholder="masalan, 18" step="0.1" />
+
+    <label for="d2">d₂ (panadan nishongacha masofa) [sm]:</label>
+    <input type="number" id="d2" placeholder="masalan, 7" step="0.1" />
+
+    <label for="hp">Hₚ (pananing balandligi) [m]:</label>
+    <input type="number" id="hp" placeholder="masalan, 235" step="0.1" />
+
+    <label for="hn">Hₙ (nishon balandligi) [m]:</label>
+    <input type="number" id="hn" placeholder="masalan, 180" step="0.1" />
+
+    <label for="hkp">Hₖₚ (kuzatuv punktining balandligi) [m]:</label>
+    <input type="number" id="hkp" placeholder="masalan, 351" step="0.1" />
+
+    <button onclick="calculateL()">Hisobla</button>
+
+    <div id="result" class="topo-result"></div>
+  </div>
+</div>
+
+<script>
+  function calculateL() {
+    const d1 = parseFloat(document.getElementById("d1").value);
+    const d2 = parseFloat(document.getElementById("d2").value);
+    const hp = parseFloat(document.getElementById("hp").value);
+    const hn = parseFloat(document.getElementById("hn").value);
+    const hkp = parseFloat(document.getElementById("hkp").value);
+
+    if (isNaN(d1) || isNaN(d2) || isNaN(hp) || isNaN(hn) || isNaN(hkp) || d2 === 0) {
+      document.getElementById("result").innerHTML =
+        "❌ Iltimos, barcha qiymatlarni to‘g‘ri kiriting.";
+      return;
+    }
+
+    const L = (d1 / d2) * (hp - hn) + hn - hkp;
+    let message = `📐 <strong>Hisoblangan L qiymati:</strong> ${L.toFixed(2)} m<br>`;
+    message += L < 0
+      ? "✅ Ko‘rinadi (L manfiy)"
+      : "❌ Ko‘rinmaydi (L musbat)";
+    document.getElementById("result").innerHTML = message;
+  }
+</script>
+{% endblock %}

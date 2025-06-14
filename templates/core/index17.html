@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block title %}Xarita Nomenklaturasi Ramkalari{% endblock %}
+
+{% block content %}
+<div class="topo-container">
+  <h2 class="topo-title">Nomenklatura orqali ramka koordinatalari</h2>
+
+  <div class="topo-form">
+    <label for="nomenklatura">Nomenklaturani kiriting:</label>
+    <input type="text" id="nomenklatura" placeholder="Masalan: K-39 yoki K-39-42 yoki K-39-42-B">
+
+    <button onclick="hisobla()">Hisobla</button>
+
+    <div id="result" class="topo-result mt-4"></div>
+  </div>
+</div>
+
+<script>
+  function parseNomenklatura(nomenklatura) {
+    const parts = nomenklatura.trim().toUpperCase().split('-');
+    return {
+      level: parts.length,
+      main: parts[0],
+      zone: parts[1] ? parseInt(parts[1]) : null,
+      sheet100k: parts[2] ? parseInt(parts[2]) : null,
+      sheet50k: parts[3] ? parts[3].toUpperCase() : null
+    };
+  }
+
+  function getBaseCoordinates(main, zone) {
+    const rowIndex = main.charCodeAt(0) - 'A'.charCodeAt(0) + 1; // A=1, B=2,...
+    const latN = rowIndex * 4;
+    const latS = latN - 4;
+    const lonW = (zone - 31) * 6; // ✅ To‘g‘ri zonal hisoblash
+    const lonE = lonW + 6;
+    return { latN, latS, lonW, lonE };
+  }
+
+  function get100kSheetCoords(latN, latS, lonW, lonE, sheet) {
+    const row = Math.floor((sheet - 1) / 12);  // 1–12 → 0-11
+    const col = (sheet - 1) % 12;
+
+    const latStep = 20 / 60;  // 20'
+    const lonStep = 30 / 60;  // 30'
+
+    const newLatN = latN - row * latStep;
+    const newLatS = newLatN - latStep;
+
+    const newLonW = lonW + col * lonStep;
+    const newLonE = newLonW + lonStep;
+
+    return { latN: newLatN, latS: newLatS, lonW: newLonW, lonE: newLonE };
+  }
+
+  function get50kSheetCoords(latN, latS, lonW, lonE, part) {
+    const midLat = (latN + latS) / 2;
+    const midLon = (lonW + lonE) / 2;
+
+    switch (part) {
+      case 'A': return { latN, latS: midLat, lonW, lonE: midLon };
+      case 'B': return { latN, latS: midLat, lonW: midLon, lonE };
+      case 'V': return { latN: midLat, latS, lonW, lonE: midLon };
+      case 'G': return { latN: midLat, latS, lonW: midLon, lonE };
+      default: return null;
+    }
+  }
+
+  function degToDMS(deg) {
+    const d = Math.floor(deg);
+    const min = (deg - d) * 60;
+    const m = Math.round(min);
+    return `${d}° ${m.toString().padStart(2, '0')}'`;
+  }
+
+  function hisobla() {
+    const nomenklatura = document.getElementById('nomenklatura').value;
+    const resultDiv = document.getElementById('result');
+    resultDiv.innerHTML = '';
+
+    if (!nomenklatura.includes('-')) {
+      resultDiv.innerHTML = "<p class='text-danger'>❌ Iltimos, nomenklaturani to‘g‘ri formatda kiriting.</p>";
+      return;
+    }
+
+    try {
+      const parsed = parseNomenklatura(nomenklatura);
+      let coords = null;
+
+      if (parsed.level === 2) {
+        coords = getBaseCoordinates(parsed.main, parsed.zone);
+      } else if (parsed.level === 3) {
+        const base = getBaseCoordinates(parsed.main, parsed.zone);
+        coords = get100kSheetCoords(base.latN, base.latS, base.lonW, base.lonE, parsed.sheet100k);
+      } else if (parsed.level === 4) {
+        const base = getBaseCoordinates(parsed.main, parsed.zone);
+        const sheet100k = get100kSheetCoords(base.latN, base.latS, base.lonW, base.lonE, parsed.sheet100k);
+        coords = get50kSheetCoords(sheet100k.latN, sheet100k.latS, sheet100k.lonW, sheet100k.lonE, parsed.sheet50k);
+        if (!coords) throw new Error("❌ 50k qismini noto‘g‘ri kiritdingiz (A, B, V, G bo‘lishi kerak)");
+      } else {
+        throw new Error("❌ Formati noto‘g‘ri.");
+      }
+
+      const scaleMap = {
+        2: "1:1 000 000",
+        3: "1:100 000",
+        4: "1:50 000"
+      };
+
+      resultDiv.innerHTML = `
+        <h4>📐 Masshtab: <strong>${scaleMap[parsed.level]}</strong></h4>
+        <table class="table table-bordered mt-3">
+          <thead><tr><th>Ramka</th><th>Koordinata</th></tr></thead>
+          <tbody>
+            <tr><td>Shimoliy (kenglik)</td><td>${degToDMS(coords.latN)}</td></tr>
+            <tr><td>Janubiy (kenglik)</td><td>${degToDMS(coords.latS)}</td></tr>
+            <tr><td>Sharqiy (uzunlik)</td><td>${degToDMS(coords.lonE)}</td></tr>
+            <tr><td>G‘arbiy (uzunlik)</td><td>${degToDMS(coords.lonW)}</td></tr>
+          </tbody>
+        </table>
+      `;
+    } catch (e) {
+      resultDiv.innerHTML = `<p class="text-danger">${e.message}</p>`;
+    }
+  }
+</script>
+{% endblock %}

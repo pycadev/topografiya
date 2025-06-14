@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Nishon o‘rni burchagini hisoblash{% endblock %}
+
+{% block content %}
+<div class="topo-container">
+  <h2 class="topo-title">Nishon o‘rni burchagini hisoblash</h2>
+
+  <div class="topo-form">
+    <label for="hn">Hₙ (nishonning mutlaq balandligi, m):</label>
+    <input type="number" id="hn" step="0.1" placeholder="masalan, 138" />
+
+    <label for="ht">Hₜ (to‘pning mutlaq balandligi, m):</label>
+    <input type="number" id="ht" step="0.1" placeholder="masalan, 74" />
+
+    <label for="dt">Dₜ (to‘p-nishon masofasi, m):</label>
+    <input type="number" id="dt" step="0.1" placeholder="masalan, 4600" />
+
+    <button onclick="hisobla()">Hisobla</button>
+
+    <div id="result" class="topo-result"></div>
+  </div>
+</div>
+
+<script>
+  function hisobla() {
+    const hn = parseFloat(document.getElementById("hn").value);
+    const ht = parseFloat(document.getElementById("ht").value);
+    const dt = parseFloat(document.getElementById("dt").value);
+
+    if (isNaN(hn) || isNaN(ht) || isNaN(dt) || dt === 0) {
+      document.getElementById("result").innerHTML =
+        "❌ Iltimos, barcha qiymatlarni to‘g‘ri kiriting.";
+      return;
+    }
+
+    const E = (hn - ht) / (0.001 * dt);
+    const gradus = Math.ceil(E);
+
+    document.getElementById("result").innerHTML =
+      `🎯 <strong>Nishon o‘rni burchagi:</strong> 0 - ${gradus} (${E.toFixed(2)})`;
+  }
+</script>
+{% endblock %}

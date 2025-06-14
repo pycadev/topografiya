@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Pana joy chuqurligini hisoblash{% endblock %}
+
+{% block content %}
+<div class="topo-container">
+  <h2 class="topo-title">Pana joy chuqurligini hisoblash</h2>
+
+  <div class="topo-form">
+    <label for="hkp">hₖₚ (kuzatuv punktining balandligi, m):</label>
+    <input type="number" id="hkp" step="0.1" placeholder="masalan, 55" />
+
+    <label for="hp">hₚ (panajoy balandligi, m):</label>
+    <input type="number" id="hp" step="0.1" placeholder="masalan, 32" />
+
+    <label for="d">d (to‘pdan panajoygacha masofa, sm):</label>
+    <input type="number" id="d" step="0.1" placeholder="masalan, 1.8" />
+
+    <label for="D">D (panajoydan kuzatuv punktigacha masofa, sm):</label>
+    <input type="number" id="D" step="0.1" placeholder="masalan, 6.1" />
+
+    <button onclick="hisobla()">Hisobla</button>
+
+    <div id="result" class="topo-result"></div>
+  </div>
+</div>
+
+<script>
+  function hisobla() {
+    const hkp = parseFloat(document.getElementById("hkp").value);
+    const hp = parseFloat(document.getElementById("hp").value);
+    const d = parseFloat(document.getElementById("d").value);
+    const D = parseFloat(document.getElementById("D").value);
+
+    if ([hkp, hp, d, D].some(v => isNaN(v)) || D === 0) {
+      document.getElementById("result").innerHTML =
+        "❌ Iltimos, barcha qiymatlarni to‘g‘ri kiriting.";
+      return;
+    }
+
+    const h1 = hp - ((hkp - hp) * d / D);
+    document.getElementById("result").innerHTML =
+      `📏 <strong>Pana joy chuqurligi (h₁):</strong> ${h1.toFixed(2)} m`;
+  }
+</script>
+{% endblock %}

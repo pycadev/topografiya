@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Masofa va Vaqt Hisoblash{% endblock %}
+
+{% block content %}
+<div class="topo-container">
+  <h2 class="topo-title">Masofa va Vaqt Hisoblash</h2>
+
+  <div class="topo-form">
+    <label for="distance_cm">Xaritada o‘lchangan masofa (S) [sm]:</label>
+    <input type="number" id="distance_cm" placeholder="Masalan, 132" step="0.1">
+
+    <label for="scale">Xarita masshtabi:</label>
+    <select id="scale">
+      <option value="50000">1:50 000</option>
+      <option value="100000">1:100 000</option>
+      <option value="200000" selected>1:200 000</option>
+      <option value="500000">1:500 000</option>
+    </select>
+
+    <label for="terrain">Joyning turi:</label>
+    <select id="terrain">
+      <option value="tekislik">Tekislik</option>
+      <option value="qir">Qir-adir, tog‘ oldi</option>
+      <option value="tog">Tog‘</option>
+    </select>
+
+    <label for="speed">O‘rtacha tezlik (km/soat):</label>
+    <input type="number" id="speed" placeholder="Masalan, 35" value="35">
+
+    <button onclick="calculate()">Hisobla</button>
+
+    <div id="result" class="topo-result"></div>
+  </div>
+</div>
+
+<script>
+  function getCorrectionCoefficient(terrain, scale) {
+    const table = {
+      tekislik: { 50000: 1.00, 100000: 1.00, 200000: 1.05, 500000: 1.05 },
+      qir:      { 50000: 1.05, 100000: 1.10, 200000: 1.15, 500000: 1.20 },
+      tog:      { 50000: 1.15, 100000: 1.20, 200000: 1.25, 500000: 1.30 }
+    };
+    return table[terrain][scale];
+  }
+
+  function convertToHoursMinutes(decimalHours) {
+    const hours = Math.floor(decimalHours);
+    const minutes = Math.round((decimalHours - hours) * 60);
+    return `${hours} soat ${minutes} daqiqa`;
+  }
+
+  function calculate() {
+    const S = parseFloat(document.getElementById("distance_cm").value);
+    const scale = parseInt(document.getElementById("scale").value);
+    const terrain = document.getElementById("terrain").value;
+    const speed = parseFloat(document.getElementById("speed").value);
+
+    if (isNaN(S) || isNaN(scale) || isNaN(speed)) {
+      document.getElementById("result").innerText = "❌ Iltimos, barcha maydonlarni to‘ldiring!";
+      return;
+    }
+
+    const correction = getCorrectionCoefficient(terrain, scale);
+    const D_km = (S * scale) / 100000; // sm -> km
+    const D_real = D_km * correction;
+    const T_hours = D_real / speed;
+    const T_str = convertToHoursMinutes(T_hours);
+
+    const result = 
+      `🔹 <strong>Xarita bo‘yicha masofa:</strong> ${D_km.toFixed(2)} km<br>` +
+      `🔸 <strong>Tuzatmadan keyingi haqiqiy masofa:</strong> ${D_real.toFixed(2)} km<br>` +
+      `⏱️ <strong>Sarflangan vaqt:</strong> ${T_str}`;
+
+    document.getElementById("result").innerHTML = result;
+  }
+</script>
+{% endblock %}

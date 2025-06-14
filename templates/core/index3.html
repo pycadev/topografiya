@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Xaritadan Masofa Hisoblash{% endblock %}
+
+{% block content %}
+<div class="topo-container">
+  <h2 class="topo-title">Xaritadan Haqiqiy Masofa Hisoblash</h2>
+
+  <div class="topo-form">
+    <label for="s">Xaritada o‘lchangan masofa (S, santimetrda):</label>
+    <input type="number" id="s" step="0.01" placeholder="masalan: 23.7">
+
+    <label for="m">Xarita masshtabi (M):</label>
+    <input type="number" id="m" step="1000" placeholder="masalan: 50000">
+
+    <label for="y">Qiyalik burchagi (gradusda):</label>
+    <input type="number" id="y" step="1" placeholder="masalan: 24">
+
+    <button onclick="calculate()">Hisobla</button>
+
+    <div id="result" class="topo-result"></div>
+  </div>
+</div>
+
+<script>
+  function getCorrectionCoefficient(angle) {
+    const corrections = {
+      0: 1.00, 6: 1.01, 12: 1.02, 18: 1.05,
+      24: 1.10, 30: 1.15, 36: 1.24, 42: 1.35
+    };
+    let closest = 0;
+    for (let deg in corrections) {
+      if (angle >= deg) closest = deg;
+    }
+    return corrections[closest];
+  }
+
+  function calculate() {
+    const S = parseFloat(document.getElementById("s").value);
+    const M = parseInt(document.getElementById("m").value);
+    const Y = parseFloat(document.getElementById("y").value);
+
+    if (isNaN(S) || isNaN(M) || isNaN(Y)) {
+      document.getElementById("result").innerText = "❌ Iltimos, barcha maydonlarni to‘ldiring.";
+      return;
+    }
+
+    const D_plain = S * M / 100;
+    const K = getCorrectionCoefficient(Y);
+    const D_corrected = D_plain * K;
+
+    const resultText =
+      `📏 <strong>Natijalar:</strong><br><br>` +
+      `🔹 <strong>Qiyalikni hisobga olmagan masofa:</strong> ${D_plain.toFixed(2)} m<br>` +
+      `🔸 <strong>Tuzatma koeffitsienti (${Y}°):</strong> ${K}<br>` +
+      `✅ <strong>Haqiqiy masofa:</strong> ${D_corrected.toFixed(2)} m`;
+
+    document.getElementById("result").innerHTML = resultText;
+  }
+</script>
+{% endblock %}

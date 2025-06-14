@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Topografik DMS Hisob-kitob{% endblock %}
+
+{% block content %}
+<a href="{% url 'home' %}" class="back-button mb-3 d-inline-block text-decoration-none text-primary fw-bold">
+  <i class="bi bi-arrow-left"></i> Asosiy sahifaga qaytish
+</a>
+
+<div class="text-center mb-4">
+  <img src="{% static 'img/tp.png' %}" class="img-fluid rounded shadow" alt="topografik rasm" style="max-height: 300px;">
+  <h2 class="mt-3 text-gradient">Topografik Hisob-kitob (D/M/S ko‘rinishda)</h2>
+</div>
+
+<div class="container p-4 rounded bg-light shadow-sm mb-5">
+  <!-- Direksion burchak -->
+  <label class="form-label fw-bold">Direksion burchak α:</label>
+  <div class="angle-group mb-3 d-flex flex-wrap gap-2">
+    <div class="angle-input"><input type="number" id="alpha_deg" min="0" class="form-control" placeholder="Gradus"><span class="angle-unit">°</span></div>
+    <div class="angle-input"><input type="number" id="alpha_min" min="0" max="59" class="form-control" placeholder="Minut"><span class="angle-unit">′</span></div>
+    <div class="angle-input"><input type="number" id="alpha_sec" min="0" max="59" class="form-control" placeholder="Sekund"><span class="angle-unit">″</span></div>
+  </div>
+
+  <!-- Magnit og‘ishi -->
+  <label class="form-label fw-bold">Magnit og‘ishi δ:</label>
+  <div class="angle-group mb-3 d-flex flex-wrap gap-2">
+    <input type="number" id="year1" min="1000" placeholder="masalan, 1995" class="form-control" style="max-width: 180px;">
+    <div class="angle-input"><input type="number" id="delta_deg" class="form-control"><span class="angle-unit">°</span></div>
+    <div class="angle-input"><input type="number" id="delta_min" class="form-control"><span class="angle-unit">′</span></div>
+    <div class="angle-input"><input type="number" id="delta_sec" class="form-control"><span class="angle-unit">″</span></div>
+    <select id="delta_dir" class="form-select" style="max-width: 180px;">
+      <option value="east">Sharqiy (musbat)</option>
+      <option value="west">G‘arbiy (manfiy)</option>
+    </select>
+  </div>
+
+  <!-- Meridian yaqinlashuvi -->
+  <label class="form-label fw-bold">Meridian yaqinlashuvi γ:</label>
+  <div class="angle-group mb-3 d-flex flex-wrap gap-2">
+    <div class="angle-input"><input type="number" id="gamma_deg" class="form-control"><span class="angle-unit">°</span></div>
+    <div class="angle-input"><input type="number" id="gamma_min" class="form-control"><span class="angle-unit">′</span></div>
+    <div class="angle-input"><input type="number" id="gamma_sec" class="form-control"><span class="angle-unit">″</span></div>
+    <select id="gamma_dir" class="form-select" style="max-width: 180px;">
+      <option value="east">Sharqiy (musbat)</option>
+      <option value="west">G‘arbiy (manfiy)</option>
+    </select>
+  </div>
+
+  <!-- Yil -->
+  <label class="form-label fw-bold">Magnit og‘ishi δ (yangi yil uchun):</label>
+  <input type="number" id="year" min="1000" placeholder="masalan, 2005" class="form-control mb-4" style="max-width: 180px;">
+
+  <button onclick="startCalculation()" class="btn btn-gradient w-100">
+    <i class="bi bi-calculator"></i> Hisobla
+  </button>
+
+  <div class="spinner mt-3 text-center" id="spinner" style="display:none;">
+    <div class="spinner-border text-primary" role="status"></div>
+  </div>
+
+  <pre id="result" class="mt-4 text-dark small bg-white p-3 rounded shadow-sm"></pre>
+</div>
+
+<style>
+.angle-input {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.angle-input input {
+  padding-right: 24px;
+}
+.angle-unit {
+  position: absolute;
+  right: 8px;
+  color: #098ae0;
+}
+.text-gradient {
+  background: linear-gradient(to right, #6a11cb, #2575fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+}
+.btn-gradient {
+  background: linear-gradient(90deg, #00c6ff, #0072ff);
+  border: none;
+  color: white;
+  padding: 8px 20px;
+  font-weight: 500;
+  border-radius: 30px;
+  transition: all 0.25s ease-in-out;
+}
+.btn-gradient:hover {
+  background: linear-gradient(90deg, #0072ff, #00c6ff);
+  transform: scale(1.03);
+  color: #fff;
+}
+</style>
+
+<script>
+function dmsToDecimal(deg, min, sec) {
+  const sign = deg < 0 ? -1 : 1;
+  return sign * (Math.abs(deg) + min / 60 + sec / 3600);
+}
+
+function decimalToDMS(decimal) {
+  const sign = decimal < 0 ? "-" : "";
+  const abs = Math.abs(decimal);
+  let deg = Math.floor(abs);
+  const minFloat = (abs - deg) * 60;
+  let min = Math.floor(minFloat);
+  let sec = Math.round((minFloat - min) * 60);
+
+  if (sec >= 60) { sec = 0; min += 1; }
+  if (min >= 60) { min = 0; deg += 1; }
+  const minStr = min < 10 ? `0${min}` : `${min}`;
+  const secStr = sec < 10 ? `0${sec}` : `${sec}`;
+  return `${sign}${deg}° ${minStr}′ ${secStr}″`;
+}
+
+function startCalculation() {
+  document.getElementById("result").innerHTML = "";
+  document.getElementById("spinner").style.display = "block";
+  setTimeout(() => { calculate(); }, 1000);
+}
+
+function typeWriterEffect(text, elementId, delay = 20) {
+  let i = 0;
+  const element = document.getElementById(elementId);
+  element.innerHTML = "";
+  function type() {
+    if (i < text.length) {
+      element.innerHTML += text.charAt(i);
+      i++;
+      setTimeout(type, delay);
+    }
+  }
+  type();
+}
+
+function calculate() {
+  document.getElementById("spinner").style.display = "none";
+
+  const alpha = dmsToDecimal(
+    +document.getElementById("alpha_deg").value || 0,
+    +document.getElementById("alpha_min").value || 0,
+    +document.getElementById("alpha_sec").value || 0
+  );
+
+  const delta_sign = document.getElementById("delta_dir").value === "west" ? -1 : 1;
+  const delta = delta_sign * dmsToDecimal(
+    +document.getElementById("delta_deg").value || 0,
+    +document.getElementById("delta_min").value || 0,
+    +document.getElementById("delta_sec").value || 0
+  );
+
+  const gamma_sign = document.getElementById("gamma_dir").value === "west" ? -1 : 1;
+  const gamma = gamma_sign * dmsToDecimal(
+    +document.getElementById("gamma_deg").value || 0,
+    +document.getElementById("gamma_min").value || 0,
+    +document.getElementById("gamma_sec").value || 0
+  );
+
+  const year = parseInt(document.getElementById("year").value);
+  const year1 = parseInt(document.getElementById("year1").value);
+
+  if (!year || !year1 || year < 1000 || year1 < 1000) {
+    typeWriterEffect("❌ Iltimos, to‘g‘ri yil qiymatlarini kiriting!", "result");
+    return;
+  }
+
+  const delta_now = delta + (year - year1) * (5 / 60);
+  const YT = delta_now - gamma;
+  const Am = alpha - YT;
+  const A = alpha + gamma;
+
+  const resultText =
+    `✅ Natija\n\n` +
+    `🔸 Magnit og‘ishi (δ): ${decimalToDMS(delta_now)}\n` +
+    `🔹 Yo‘nalishlar tuzatmasi (YT): ${decimalToDMS(YT)}\n` +
+    `🔸 Haqiqiy azimut (A): ${decimalToDMS(A)}\n` +
+    `🔹 Magnit azimut (Am): ${decimalToDMS(Am)}`;
+
+  typeWriterEffect(resultText, "result");
+}
+</script>
+{% endblock %}

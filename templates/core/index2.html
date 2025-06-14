@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Azimutdan Direksion Burchakka{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <a href="{% url 'home' %}" class="btn btn-warning mb-3 fw-bold">
+        ← Asosiy sahifaga qaytish
+    </a>
+
+    <div class="text-center mb-4">
+        <img src="{% static 'img/index2.png' %}" alt="Yo'nalish rasmi"
+             class="img-fluid rounded shadow" style="max-width: 300px;">
+    </div>
+
+    <div class="card shadow-lg border-0">
+        <div class="card-body p-4">
+            <h2 class="text-center text-primary mb-4">Azimutdan Direksion Burchakka Hisoblash</h2>
+
+            <!-- Form inputs -->
+            <form id="calcForm" onsubmit="calculate(); return false;">
+                <!-- Am -->
+                <label class="fw-bold">1. Magnit azimut (Am):</label>
+                <div class="row g-2 mb-3">
+                    <div class="col"><input type="number" class="form-control" id="am_deg" placeholder="Gradus" min="0" max="360"></div>
+                    <div class="col"><input type="number" class="form-control" id="am_min" placeholder="Minut" min="0" max="59"></div>
+                    <div class="col"><input type="number" class="form-control" id="am_sec" placeholder="Sekund" min="0" max="59"></div>
+                </div>
+
+                <!-- Y1 -->
+                <label class="fw-bold">2. Boshlang‘ich magnit og‘ish (δ) yili (y1):</label>
+                <input type="number" class="form-control mb-3" id="y1" placeholder="masalan, 1995" min="1900" max="2100">
+
+                <!-- Delta -->
+                <label class="fw-bold">3. δ (y1 dagi qiymat):</label>
+                <div class="row g-2 mb-3">
+                    <div class="col"><input type="number" class="form-control" id="delta_deg" placeholder="Gradus"></div>
+                    <div class="col"><input type="number" class="form-control" id="delta_min" placeholder="Minut"></div>
+                    <div class="col"><input type="number" class="form-control" id="delta_sec" placeholder="Sekund"></div>
+                    <div class="col">
+                        <select id="delta_dir" class="form-select">
+                            <option value="east">Sharqiy (musbat)</option>
+                            <option value="west">G‘arbiy (manfiy)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Gamma -->
+                <label class="fw-bold">4. Meridianlar yaqinlashuvi (γ):</label>
+                <div class="row g-2 mb-3">
+                    <div class="col"><input type="number" class="form-control" id="gamma_deg" placeholder="Gradus"></div>
+                    <div class="col"><input type="number" class="form-control" id="gamma_min" placeholder="Minut"></div>
+                    <div class="col"><input type="number" class="form-control" id="gamma_sec" placeholder="Sekund"></div>
+                    <div class="col">
+                        <select id="gamma_dir" class="form-select">
+                            <option value="east">Sharqiy (musbat)</option>
+                            <option value="west">G‘arbiy (manfiy)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Y2 -->
+                <label class="fw-bold">5. Hisoblash yili (y2):</label>
+                <input type="number" class="form-control mb-4" id="y2" placeholder="masalan, 2025" min="1900" max="2100">
+
+                <button type="submit" class="btn btn-primary w-100 fw-bold fs-5">Hisoblash</button>
+            </form>
+
+            <!-- Natija -->
+            <div id="result" class="alert alert-info mt-4 d-none" role="alert" style="white-space: pre-wrap;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// JS funksiyalar (hisoblash)
+function dmsToMinutes(deg, min, sec) {
+    return deg * 60 + min + sec / 60;
+}
+
+function minutesToDMS(totalMinutes) {
+    const sign = totalMinutes < 0 ? "-" : "";
+    const abs = Math.abs(totalMinutes);
+    const deg = Math.floor(abs / 60);
+    const min = Math.floor(abs % 60);
+    let sec = Math.round((abs % 1) * 60);
+    if (sec === 60) {
+        sec = 0;
+        min += 1;
+    }
+    return `${sign}${deg}° ${(min < 10 ? "0" : "") + min}′ ${(sec < 10 ? "0" : "") + sec}″`;
+}
+
+function calculate() {
+    const Am = dmsToMinutes(
+        parseInt(document.getElementById("am_deg").value) || 0,
+        parseInt(document.getElementById("am_min").value) || 0,
+        parseInt(document.getElementById("am_sec").value) || 0
+    );
+
+    const y1 = parseInt(document.getElementById("y1").value);
+    const y2 = parseInt(document.getElementById("y2").value);
+    if (!y1 || !y2 || y2 < y1) {
+        showResult("❌ Yillar noto‘g‘ri kiritilgan.", true);
+        return;
+    }
+
+    const delta_sign = document.getElementById("delta_dir").value === "west" ? -1 : 1;
+    const delta_y1 = delta_sign * dmsToMinutes(
+        parseInt(document.getElementById("delta_deg").value) || 0,
+        parseInt(document.getElementById("delta_min").value) || 0,
+        parseInt(document.getElementById("delta_sec").value) || 0
+    );
+
+    const gamma_sign = document.getElementById("gamma_dir").value === "west" ? -1 : 1;
+    const gamma = gamma_sign * dmsToMinutes(
+        parseInt(document.getElementById("gamma_deg").value) || 0,
+        parseInt(document.getElementById("gamma_min").value) || 0,
+        parseInt(document.getElementById("gamma_sec").value) || 0
+    );
+
+    const k = -5;  // har yili -5 daqiqa
+    const year_diff = y2 - y1;
+    const delta_y2 = delta_y1 + k * year_diff;
+    const YT = delta_y2 - gamma;
+    const alpha = Am + YT;
+
+    const resultText = 
+        `✅ Natijalar:\n\n` +
+        `📅 Yillar farqi: ${year_diff} yil\n` +
+        `🔁 Yangilangan magnit og‘ish δ(${y2}) = ${minutesToDMS(delta_y2)}\n` +
+        `➖ YT = δ(${y2}) - γ = ${minutesToDMS(YT)}\n` +
+        `📐 Direksion burchak α = Am + YT = ${minutesToDMS(alpha)}`;
+
+    showResult(resultText, false);
+}
+
+function showResult(text, isError) {
+    const resultDiv = document.getElementById("result");
+    resultDiv.classList.remove("d-none");
+    resultDiv.classList.toggle("alert-danger", isError);
+    resultDiv.classList.toggle("alert-info", !isError);
+    resultDiv.innerText = text;
+}
+</script>
+{% endblock %}

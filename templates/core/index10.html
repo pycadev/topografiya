@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Ko‘rish uzoqligini hisoblash{% endblock %}
+
+{% block content %}
+<div class="topo-container">
+  <h2 class="topo-title">Ko‘rish uzoqligini hisoblash</h2>
+
+  <div class="topo-form">
+    <label for="h1">h₁ (kuzatuvchi balandligi, m):</label>
+    <input type="number" id="h1" placeholder="masalan, 22" step="0.1" />
+
+    <label for="h2">h₂ (nishon balandligi, m):</label>
+    <input type="number" id="h2" placeholder="masalan, 18" step="0.1" />
+
+    <button onclick="calculateDistance()">Hisobla</button>
+
+    <div id="result" class="topo-result"></div>
+  </div>
+</div>
+
+<script>
+  function calculateDistance() {
+    const h1 = parseFloat(document.getElementById("h1").value);
+    const h2 = parseFloat(document.getElementById("h2").value);
+
+    if (isNaN(h1) || isNaN(h2) || h1 < 0 || h2 < 0) {
+      document.getElementById("result").innerHTML =
+        "❌ Iltimos, to‘g‘ri va musbat qiymatlar kiriting.";
+      return;
+    }
+
+    const D = 3.83 * (Math.sqrt(h1) + Math.sqrt(h2));
+    document.getElementById("result").innerHTML =
+      `📏 <strong>Ko‘rish uzoqligi:</strong> ${D.toFixed(2)} km`;
+  }
+</script>
+{% endblock %}

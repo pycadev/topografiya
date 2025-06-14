@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Mutloq va Nisbiy Balandliklarni Aniqlash{% endblock %}
+
+{% block content %}
+<div class="topo-container">
+  <a href="{% url 'home' %}" class="topo-back">← Asosiy sahifaga qaytish</a>
+
+  <h2 class="topo-title">Mutloq va Nisbiy Balandliklarni Aniqlash</h2>
+
+  <div class="topo-form">
+    <label for="h1">Birinchi nuqtaning mutloq balandligi (H₁, metrda):</label>
+    <input type="number" id="h1" placeholder="Masalan: 150">
+
+    <label for="h2">Ikkinchi nuqtaning mutloq balandligi (H₂, metrda):</label>
+    <input type="number" id="h2" placeholder="Masalan: 120">
+
+    <button onclick="hisobla()">Hisobla</button>
+
+    <div id="result" class="topo-result"></div>
+  </div>
+</div>
+
+<script>
+  function hisobla() {
+    const h1 = parseFloat(document.getElementById('h1').value);
+    const h2 = parseFloat(document.getElementById('h2').value);
+    const resultDiv = document.getElementById('result');
+
+    if (isNaN(h1) || isNaN(h2)) {
+      resultDiv.innerHTML = "❌ Iltimos, barcha maydonlarga raqam kiriting!";
+      return;
+    }
+
+    const nisbiyBalandlik = h1 - h2;
+
+    resultDiv.innerHTML = `
+      🔣 Natija: Nisbiy balandlik <strong>${nisbiyBalandlik.toFixed(2)} m</strong><br>
+      <small>(H₁ = ${h1} m, H₂ = ${h2} m)</small>
+    `;
+  }
+</script>
+{% endblock %}

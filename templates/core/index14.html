@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Koordinatalar orqali masofa hisoblash{% endblock %}
+
+{% block content %}
+<div class="topo-container">
+  <h2 class="topo-title">Koordinatalar orqali masofa hisoblash</h2>
+
+  <div class="topo-form">
+    <label for="x1">X₁ (birinchi nuqta):</label>
+    <input type="number" id="x1" step="1" placeholder="masalan, 4297426" />
+
+    <label for="y1">Y₁ (birinchi nuqta):</label>
+    <input type="number" id="y1" step="1" placeholder="masalan, 11426942" />
+
+    <label for="x2">X₂ (ikkinchi nuqta):</label>
+    <input type="number" id="x2" step="1" placeholder="masalan, 4310459" />
+
+    <label for="y2">Y₂ (ikkinchi nuqta):</label>
+    <input type="number" id="y2" step="1" placeholder="masalan, 11433061" />
+
+    <button onclick="hisobla()">Hisobla</button>
+
+    <div id="result" class="topo-result"></div>
+  </div>
+</div>
+
+<script>
+  function hisobla() {
+    const x1 = parseFloat(document.getElementById("x1").value);
+    const y1 = parseFloat(document.getElementById("y1").value);
+    const x2 = parseFloat(document.getElementById("x2").value);
+    const y2 = parseFloat(document.getElementById("y2").value);
+
+    if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) {
+      document.getElementById("result").innerHTML =
+        "❌ Iltimos, barcha koordinatalarni to‘g‘ri kiriting.";
+      return;
+    }
+
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const D = Math.sqrt(dx * dx + dy * dy);
+
+    document.getElementById("result").innerHTML =
+      `📏 <strong>Ob’ektlar orasidagi masofa:</strong> ${D.toFixed(1)} metr`;
+  }
+</script>
+{% endblock %}
